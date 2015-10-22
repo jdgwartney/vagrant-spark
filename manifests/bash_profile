@@ -8,6 +8,6 @@ fi
 # Set command line editin to use vi/vim
 set -o vi
 
-# Export JMX Port for Kafka monitoring
-export JMX_PORT=9990
+# Sparks needs sf4j-simple.jar to be in the classpath
+export SPARK_CLASSPATH=/usr/share/java/slf4j-simple.jar 
 
