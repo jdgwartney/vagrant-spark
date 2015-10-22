@@ -20,6 +20,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :shell do |shell|
      shell.inline = "puppet module install puppetlabs-stdlib;
                      puppet module install puppetlabs-apt;
+		     puppet module install puppetlabs-java;
 		     puppet module install cesnet-spark;
                      puppet module install boundary-boundary;
                      exit 0"
