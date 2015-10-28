@@ -23,11 +23,6 @@ node /ubuntu/ {
     distribution => 'jre',
   }
 
-  class { 'spark':
-    master_hostname => 'localhost',
-    yarn_enable => false,
-  }
-
   include apt
 
   apt::source { 'CDH-5':
@@ -35,6 +30,7 @@ node /ubuntu/ {
     location => 'http://archive.cloudera.com/cdh5/ubuntu/trusty/amd64/cdh/',
     release  => 'trusty-cdh5.4.0',
     repos    =>  'contrib',
+    architecture => 'amd64',
     key      => {
        'id'     => 'F36A89E33CC1BD0F71079007327574EE02A818DD',
        'source' => 'http://archive.cloudera.com/cdh5/ubuntu/trusty/amd64/cdh/archive.key'
@@ -45,37 +41,39 @@ node /ubuntu/ {
     }
   } 
 
-  include spark::master
-  include spark::worker
-  include spark::frontend
-
-  file { 'spark-master-config':
-    path   => '/etc/init.d/spark-master',
-    ensure => file,
-    source => '/vagrant/manifests/spark-master-ubuntu',
-  }
-
-  file { 'spark-worker-config':
-    path   => '/etc/init.d/spark-worker',
-    ensure => file,
-    source => '/vagrant/manifests/spark-worker-ubuntu', 
-  }
-
   service { 'spark-master':
-    ensure => 'running',
-  }  
+    ensure => 'running'
+  }
 
   service { 'spark-worker':
     ensure => 'running',
   }
 
-  Host['localhost'] -> File['bash_profile'] -> Exec['update-apt-packages'] -> Class['java'] -> Apt::Source['CDH-5'] -> Class['spark'] -> Class['spark::master'] -> Class['spark::worker'] -> Class['spark::frontend'] -> File['spark-master-config'] ~> Service['spark-master'] -> File['spark-worker-config'] ~> Service['spark-worker']
+  file { 'spark-master-config':
+    path   => '/etc/init.d/spark-master',
+    ensure => file,
+    owner => 'root',
+    source => '/vagrant/manifests/spark-master-ubuntu',
+  }
 
+  exec { 'spark-installation':
+    environment => 'SPARK_CLASSPATH=/usr/share/java/slf4j-simple.jar',
+    command => '/usr/bin/apt-get install -y spark-core spark-master spark-worker',
+    timeout => 0,
+  }
+  
+  file { 'spark-worker-config':
+    path   => '/etc/init.d/spark-worker',
+    ensure => file,
+    owner => 'root',
+    source => '/vagrant/manifests/spark-worker-ubuntu', 
+  }
   # Configure TrueSight Pulse meter
   class { 'boundary':
     token => $::api_token,
   }
 
+  Host['localhost'] -> File['bash_profile'] -> Exec['update-apt-packages'] -> Class['java'] -> Apt::Source['CDH-5'] -> Exec['spark-installation'] -> File['spark-master-config'] ~> Service['spark-master'] -> File['spark-worker-config'] ~> Service['spark-worker']
 }
 
 # Separate the Cento 7.0 install until the boundary meter puppet package is fixed
@@ -95,21 +93,6 @@ node /^centos-7-0/ {
   package {'epel-release':
     ensure => 'installed',
     require => Exec['update-rpm-packages'],
-    before => Class['docker']
-  }
-
-  class { 'docker':
-    docker_users => ['vagrant'],
-    tcp_bind => 'tcp://127.0.0.1:2375',
-  }
-
-  docker::image { 'ubuntu':
-     image_tag => 'precise'
-   }
-
-  docker::run { 'helloworld':
-     image => 'ubuntu',
-     command => '/bin/sh -c "while true; do echo hello world; sleep 1; done"',
   }
 
 }
@@ -131,21 +114,6 @@ node /^centos/ {
   package {'epel-release':
     ensure => 'installed',
     require => Exec['update-rpm-packages'],
-    before => Class['docker']
-  }
-
-  class { 'docker':
-    docker_users => ['vagrant'],
-    tcp_bind => 'tcp://127.0.0.1:2375',
-  }
-
-  docker::image { 'ubuntu':
-     image_tag => 'precise'
-   }
-
-  docker::run { 'helloworld':
-     image => 'ubuntu',
-     command => '/bin/sh -c "while true; do echo hello world; sleep 1; done"',
   }
 
   # Configure TrueSight Pulse meter
@@ -156,6 +124,3 @@ node /^centos/ {
 }
 
 
-node default {
-
-}

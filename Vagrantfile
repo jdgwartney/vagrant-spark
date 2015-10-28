@@ -58,7 +58,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # fix box_version until there is support in Vagrant for newer versions of puppet.
     v.vm.box_version = "1.0.1"
     v.vm.hostname = "ubuntu-14-04"
-    end
   end
-
 end
