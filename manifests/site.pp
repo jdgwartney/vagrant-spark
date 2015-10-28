@@ -49,7 +49,27 @@ node /ubuntu/ {
   include spark::worker
   include spark::frontend
 
-  Host['localhost'] -> File['bash_profile'] -> Exec['update-apt-packages'] -> Class['java'] -> Apt::Source['CDH-5'] -> Class['spark'] -> Class['spark::master'] -> Class['spark::worker'] -> Class['spark::frontend']
+  file { 'spark-master-config':
+    path   => '/etc/init.d/spark-master',
+    ensure => file,
+    source => '/vagrant/manifests/spark-master-ubuntu',
+  }
+
+  file { 'spark-worker-config':
+    path   => '/etc/init.d/spark-worker',
+    ensure => file,
+    source => '/vagrant/manifests/spark-worker-ubuntu', 
+  }
+
+  service { 'spark-master':
+    ensure => 'running',
+  }  
+
+  service { 'spark-worker':
+    ensure => 'running',
+  }
+
+  Host['localhost'] -> File['bash_profile'] -> Exec['update-apt-packages'] -> Class['java'] -> Apt::Source['CDH-5'] -> Class['spark'] -> Class['spark::master'] -> Class['spark::worker'] -> Class['spark::frontend'] -> File['spark-master-config'] ~> Service['spark-master'] -> File['spark-worker-config'] ~> Service['spark-worker']
 
   # Configure TrueSight Pulse meter
   class { 'boundary':

@@ -12,8 +12,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.cpus = 2
   end
 
-  config.vm.network "forwarded_port", guest: 2375, host: 2375
-
   #
   # Add the required puppet modules before provisioning is run by puppet
   #
@@ -53,31 +51,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.vm.box = "puppetlabs/ubuntu-12.04-64-puppet"
     v.vm.box_version = "1.0.1"
     v.vm.hostname = "ubuntu-12-04"
-    
-    # Needed to override to change the default outside-in ordering.
-    config.vm.provision "puppet" do |puppet|
-      puppet.manifests_path = "manifests"
-      puppet.manifest_file  = "site.pp"
-      puppet.facter = {
-        "api_token" => ENV["API_TOKEN"],
-      }
-    end
-
   end
 
   config.vm.define "ubuntu-14.04", autostart: false do |v|
     v.vm.box = "puppetlabs/ubuntu-14.04-64-puppet"
-    # fix box_version until Vagrant support newer versions of puppet.
+    # fix box_version until there is support in Vagrant for newer versions of puppet.
     v.vm.box_version = "1.0.1"
     v.vm.hostname = "ubuntu-14-04"
-    
-    # Needed to override to change the default outside-in ordering.
-    config.vm.provision "puppet" do |puppet|
-      puppet.manifests_path = "manifests"
-      puppet.manifest_file  = "site.pp"
-      puppet.facter = {
-        "api_token" => ENV["API_TOKEN"],
-      }
     end
   end
 
