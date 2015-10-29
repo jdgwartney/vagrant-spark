@@ -78,7 +78,7 @@ node /ubuntu/ {
 
 # Separate the Cento 7.0 install until the boundary meter puppet package is fixed
 node /^centos-7-0/ {
-  file { 'bash_profile':
+    file { 'bash_profile':
     path    => '/home/vagrant/.bash_profile',
     ensure  => file,
     source  => '/vagrant/manifests/bash_profile',
@@ -95,6 +95,36 @@ node /^centos-7-0/ {
     require => Exec['update-rpm-packages'],
   }
 
+  class { 'java':
+        distribution => 'jre',
+  } 
+
+  yumrepo { "CDH-5":
+        baseurl => "http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/5.4.0/",
+        descr => "IUS Community repository",
+        enabled => 1,
+        gpgcheck => 0
+  }
+
+  $master_hostname='127.0.0.1'
+
+  class{'hadoop':
+    realm         => '',
+    hdfs_hostname => $master_hostname,
+    slaves        => [],
+  }
+
+  class{'spark':
+    master_hostname        => $master_hostname,
+    hdfs_hostname          => $master_hostname,
+    historyserver_hostname => $master_hostname,
+    yarn_enable            => false,
+  }
+
+  include spark::master
+  include spark::worker
+
+  File['bash_profile'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Yumrepo['CDH-5'] -> Class['hadoop'] -> Class['spark'] -> Class['spark::master'] -> Class['spark::worker']
 }
 
 node /^centos/ {
@@ -116,11 +146,39 @@ node /^centos/ {
     require => Exec['update-rpm-packages'],
   }
 
+  class { 'java':
+        distribution => 'jre',
+  } 
+
+  yumrepo { "CDH-5":
+        baseurl => "http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/5.4.0/",
+        descr => "IUS Community repository",
+        enabled => 1,
+        gpgcheck => 0
+  }
+
+  $master_hostname='127.0.0.1'
+
+  class{'hadoop':
+    realm         => '',
+    hdfs_hostname => $master_hostname,
+    slaves        => [],
+  }
+
+  class{'spark':
+    master_hostname        => $master_hostname,
+    hdfs_hostname          => $master_hostname,
+    historyserver_hostname => $master_hostname,
+    yarn_enable            => false,
+  }
+
+  include spark::master
+  include spark::worker
+
   # Configure TrueSight Pulse meter
   class { 'boundary':
     token => $::api_token
   }
 
+  File['bash_profile'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Yumrepo['CDH-5'] -> Class['hadoop'] -> Class['spark'] -> Class['spark::master'] -> Class['spark::worker']
 }
-
-
