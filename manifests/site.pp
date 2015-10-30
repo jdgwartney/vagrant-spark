@@ -106,25 +106,27 @@ node /^centos-7-0/ {
         gpgcheck => 0
   }
 
-  $master_hostname='127.0.0.1'
-
-  class{'hadoop':
-    realm         => '',
-    hdfs_hostname => $master_hostname,
-    slaves        => [],
+  package { 'spark-core':
+    ensure => 'installed'
   }
 
-  class{'spark':
-    master_hostname        => $master_hostname,
-    hdfs_hostname          => $master_hostname,
-    historyserver_hostname => $master_hostname,
-    yarn_enable            => false,
+  package { 'spark-master':
+    ensure => 'installed'
   }
 
-  include spark::master
-  include spark::worker
+  package { 'spark-worker':
+    ensure => 'installed' 
+  }
 
-  File['bash_profile'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Yumrepo['CDH-5'] -> Class['hadoop'] -> Class['spark'] -> Class['spark::master'] -> Class['spark::worker']
+  service { 'spark-master':
+    ensure => 'running'
+  }
+
+  service { 'spark-worker':
+    ensure => 'running',
+  }
+
+  File['bash_profile'] -> Yumrepo['CDH-5'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Package['spark-core'] -> Package['spark-master'] ~> Service['spark-master'] -> Package['spark-worker'] ~> Service['spark-worker']
 }
 
 node /^centos/ {
@@ -157,28 +159,30 @@ node /^centos/ {
         gpgcheck => 0
   }
 
-  $master_hostname='127.0.0.1'
-
-  class{'hadoop':
-    realm         => '',
-    hdfs_hostname => $master_hostname,
-    slaves        => [],
+  package { 'spark-core':
+    ensure => 'installed'
   }
 
-  class{'spark':
-    master_hostname        => $master_hostname,
-    hdfs_hostname          => $master_hostname,
-    historyserver_hostname => $master_hostname,
-    yarn_enable            => false,
+  package { 'spark-master':
+    ensure => 'installed'
   }
 
-  include spark::master
-  include spark::worker
+  package { 'spark-worker':
+    ensure => 'installed' 
+  }
 
   # Configure TrueSight Pulse meter
   class { 'boundary':
     token => $::api_token
   }
 
-  File['bash_profile'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Yumrepo['CDH-5'] -> Class['hadoop'] -> Class['spark'] -> Class['spark::master'] -> Class['spark::worker']
+  service { 'spark-master':
+    ensure => 'running'
+  }
+
+  service { 'spark-worker':
+    ensure => 'running',
+  }
+
+  File['bash_profile'] -> Yumrepo['CDH-5'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Package['spark-core'] -> Package['spark-master'] ~> Service['spark-master'] -> Package['spark-worker'] ~> Service['spark-worker']
 }
