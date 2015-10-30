@@ -68,12 +68,20 @@ node /ubuntu/ {
     owner => 'root',
     source => '/vagrant/manifests/spark-worker-ubuntu', 
   }
+
+  file { 'spark-metrics-config':
+    path   => '/etc/spark/conf/metrics.properties',
+    ensure => file,
+    owner => 'root',
+    source => '/vagrant/manifests/metrics.properties',
+  }
+
   # Configure TrueSight Pulse meter
   class { 'boundary':
     token => $::api_token,
   }
 
-  Host['localhost'] -> File['bash_profile'] -> Exec['update-apt-packages'] -> Class['java'] -> Apt::Source['CDH-5'] -> Exec['spark-installation'] -> File['spark-master-config'] ~> Service['spark-master'] -> File['spark-worker-config'] ~> Service['spark-worker']
+  Host['localhost'] -> File['bash_profile'] -> Exec['update-apt-packages'] -> Class['java'] -> Apt::Source['CDH-5'] -> Exec['spark-installation'] -> File['spark-metrics-config'] -> File['spark-master-config'] ~> Service['spark-master'] -> File['spark-worker-config'] ~> Service['spark-worker'] -> Class['boundary']
 }
 
 # Separate the Cento 7.0 install until the boundary meter puppet package is fixed
@@ -126,7 +134,14 @@ node /^centos-7-0/ {
     ensure => 'running',
   }
 
-  File['bash_profile'] -> Yumrepo['CDH-5'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Package['spark-core'] -> Package['spark-master'] ~> Service['spark-master'] -> Package['spark-worker'] ~> Service['spark-worker']
+  file { 'spark-metrics-config':
+    path   => '/etc/spark/conf/metrics.properties',
+    ensure => file,
+    owner => 'root',
+    source => '/vagrant/manifests/metrics.properties',
+  }
+
+  File['bash_profile'] -> Yumrepo['CDH-5'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Package['spark-core'] -> Package['spark-master'] -> File['spark-metrics-config'] ~> Service['spark-master'] -> Package['spark-worker'] ~> Service['spark-worker']
 }
 
 node /^centos/ {
@@ -184,5 +199,12 @@ node /^centos/ {
     ensure => 'running',
   }
 
-  File['bash_profile'] -> Yumrepo['CDH-5'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Package['spark-core'] -> Package['spark-master'] ~> Service['spark-master'] -> Package['spark-worker'] ~> Service['spark-worker']
+  file { 'spark-metrics-config':
+    path   => '/etc/spark/conf/metrics.properties',
+    ensure => file,
+    owner => 'root',
+    source => '/vagrant/manifests/metrics.properties',
+  }
+
+  File['bash_profile'] -> Yumrepo['CDH-5'] -> Exec['update-rpm-packages'] -> Package['epel-release'] -> Class['java'] -> Package['spark-core'] -> Package['spark-master'] -> File['spark-metrics-config'] ~> Service['spark-master'] -> Package['spark-worker'] ~> Service['spark-worker'] -> Class['boundary']
 }
