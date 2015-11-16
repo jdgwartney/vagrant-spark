@@ -1,4 +1,4 @@
-# TrueSight Pulse Vagrant Spark
+# Vagrant Spark
 
 Configures a virtual machine with a Spark Master and Spark Worker node running for testing TrueSight Pulse Plugin for Spark.
 
@@ -18,7 +18,7 @@ Prior to installation you need to obtain in your Boundary API Token.
 
 1. Clone the GitHub Repository:
 ```bash
-$ git clone https://github.com/boundary/truesightpulse-vagrant-spark
+$ git clone https://github.com/boundary/vagrant-spark
 ```
 
 2. Start the virtual machine using your TrueSight Pulse API Token:
