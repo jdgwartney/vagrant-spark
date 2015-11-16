@@ -60,5 +60,3 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.vm.hostname = "ubuntu-14-04"
     end
   end
-
-end
