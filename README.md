@@ -17,17 +17,23 @@ Master and Worker nodes will run automatically at system start-up. If you want t
 Prior to installation you need to obtain in your Boundary API Token.
 
 1. Clone the GitHub Repository:
+<<<<<<< HEAD
 ```bash
 $ git clone https://github.com/boundary/vagrant-spark
 ```
+=======
+   ```bash
+   $ git clone https://github.com/boundary/truesightpulse-vagrant-spark
+   ```
+>>>>>>> gabriel/master
 
 2. Start the virtual machine using your TrueSight Pulse API Token:
-```bash
-$ API_TOKEN=<TrueSight Pulse API Token> vagrant up <virtual machine name>
-```
-NOTE: Run `vagrant status` to list the name of the virtual machines.
+   ```bash
+   $ API_TOKEN=<TrueSight Pulse API Token> vagrant up <virtual machine name>
+   ```
+   NOTE: Run `vagrant status` to list the name of the virtual machines.
 
 3. Login to the virtual machine
-```bash
-$ vagrant ssh <virtual machine name>
-```
+   ```bash
+   $ vagrant ssh <virtual machine name>
+   ```

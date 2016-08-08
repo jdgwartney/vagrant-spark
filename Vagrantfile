@@ -19,7 +19,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      shell.inline = "puppet module install puppetlabs-stdlib;
                      puppet module install puppetlabs-apt;
 		     puppet module install puppetlabs-java;
-		     puppet module install cesnet-spark;
                      puppet module install boundary-boundary;
                      exit 0"
   end
@@ -28,6 +27,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Use Puppet to provision the VM
   #
   config.vm.provision "puppet" do |puppet|
+    puppet.options = "--verbose --debug"
     puppet.manifests_path = "manifests"
     puppet.manifest_file  = "site.pp"
     puppet.facter = {
@@ -58,5 +58,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # fix box_version until there is support in Vagrant for newer versions of puppet.
     v.vm.box_version = "1.0.1"
     v.vm.hostname = "ubuntu-14-04"
-    end
   end
+end
